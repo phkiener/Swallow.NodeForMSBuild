@@ -8,4 +8,7 @@
     <File Path="NuGet.config" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/Lib/">
+    <Project Path="src/Swallow.Node-MSBuild/Swallow.Node-MSBuild.csproj" />
+  </Folder>
 </Solution>
