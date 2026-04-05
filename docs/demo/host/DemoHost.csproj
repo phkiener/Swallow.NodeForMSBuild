@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <!-- Emulate the package being a NuGet dependency: -->
-  <Import Project="../../src/Swallow.Node-MSBuild/build/Swallow.Node-MSBuild.props" />
+  <Import Project="../../../src/Swallow.Node-MSBuild/build/Swallow.Node-MSBuild.props" />
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -9,8 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-
   <!-- Emulate the package being a NuGet dependency: -->
-  <Import Project="../../src/Swallow.Node-MSBuild/build/Swallow.Node-MSBuild.targets" />
+  <Import Project="../../../src/Swallow.Node-MSBuild/build/Swallow.Node-MSBuild.targets" />
 
 </Project>

@@ -7,11 +7,11 @@
   <ItemGroup>
     <FrontendConfig Include="$(PackageJsonPath)package.json" />
     <FrontendConfig Include="$(PackageJsonPath)package-lock.json" />
-    <FrontendBuild Include="@(FrontendCompilePatterns->'$(MSBuildProjectDirectory)**/%(Identity)')" Exclude="$(PackageJsonPath)/node_modules/**/*;$(FrontendCompileExcludes)" />
+    <FrontendBuild Include="@(FrontendCompilePatterns->'$(MSBuildProjectDirectory)**/%(Identity)')" Exclude="$(PackageJsonPath)node_modules/**/*;$(FrontendCompileExcludes)" />
 
     <Content Remove="@(FrontendConfig)" />
     <Content Remove="@(FrontendBuild)" />
-    <Content Remove="$(PackageJsonPath)/node_modules/**/*" />
+    <Content Remove="$(PackageJsonPath)node_modules/**/*" />
 
     <None Include="@(FrontendConfig)" />
     <None Include="@(FrontendBuild)" />
@@ -43,8 +43,10 @@
 
   <!-- npm run build - depends on the stamp-file -->
   <Target Name="_FrontendBuild" BeforeTargets="PrepareForBuild" DependsOnTargets="_InstallDependencies" Inputs="@(_FrontendInputs)" Outputs="@(_FrontendBuildStamp)" >
+    <MakeDir Directories="$(IntermediateOutputPath)dist/" />
+
     <Exec Command="$(NpmToolPath) run --if-present $(NpmBuildTarget)"
-          EnvironmentVariables="OUT_DIR=$(IntermediateOutputPath)/dist/"
+          EnvironmentVariables="OUT_DIR=$(IntermediateOutputPath)dist/"
           EchoOff="true"
           WorkingDirectory="$(PackageJsonPath)" />
 
@@ -91,7 +93,7 @@
   <!-- npm run clean and remove our build stamp -->
   <Target Name="_CleanFrontendOutputs" DependsOnTargets="_SetupFrontendBuild" BeforeTargets="Clean">
     <Exec Command="$(NpmToolPath) run --if-present $(NpmCleanTarget)"
-          EnvironmentVariables="OUT_DIR=$(IntermediateOutputPath)/dist/"
+          EnvironmentVariables="OUT_DIR=$(IntermediateOutputPath)dist/"
           EchoOff="true"
           WorkingDirectory="$(PackageJsonPath)" />
 

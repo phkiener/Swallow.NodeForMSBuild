@@ -9,7 +9,8 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Demo/">
-    <Project Path="docs/demo/DemoHost.csproj" />
+    <Project Path="docs/demo/host/DemoHost.csproj" />
+    <Project Path="docs/demo/package/DemoPackage.csproj" />
   </Folder>
   <Folder Name="/Library/">
     <Project Path="src/Swallow.Node-MSBuild/Swallow.Node-MSBuild.csproj" />

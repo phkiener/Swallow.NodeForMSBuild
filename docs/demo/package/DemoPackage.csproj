@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!-- Emulate the package being a NuGet dependency: -->
+  <Import Project="../../../src/Swallow.Node-MSBuild/build/Swallow.Node-MSBuild.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <!-- Emulate the package being a NuGet dependency: -->
+  <Import Project="../../../src/Swallow.Node-MSBuild/build/Swallow.Node-MSBuild.targets" />
+
+</Project>
