@@ -1,3 +1,29 @@
 <Project>
 
+  <PropertyGroup>
+
+    <!-- Location of the package.json file (and thus the node_modules as well) -->
+    <PackageJsonPath>$(MSBuildProjectDirectory)/</PackageJsonPath>
+
+    <!-- The 'npm' instance to use when building -->
+    <NpmToolPath>npm</NpmToolPath>
+
+    <!-- Which script to run when building (dotnet build) -->
+    <NpmBuildTarget>build</NpmBuildTarget>
+
+    <!-- Which script to run when cleaning (dotnet clean) -->
+    <NpmCleanTarget>clean</NpmCleanTarget>
+
+    <!-- Extensions that should be considered for the frontend build. -->
+    <FrontendCompilePatterns>*.js;*.jsx;*.ts;*.tsx</FrontendCompilePatterns>
+
+    <!--
+      By default, we exclude all files in wwwroot/ from our build.
+      This means they will stay untouched in <Content> and have no impact on
+      the incremental build. They *might* be dependencies to the build nonetheless,
+      we can't really detect that. It's up to the user to do that correctly.
+    -->
+    <FrontendCompileExcludes>wwwroot/**/*</FrontendCompileExcludes>
+  </PropertyGroup>
+
 </Project>

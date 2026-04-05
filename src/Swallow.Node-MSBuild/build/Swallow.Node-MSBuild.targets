@@ -1,3 +1,108 @@
 <Project>
 
+  <!--
+    Define the various item groups for later use. We want to make sure that none of our items is
+    present in Content, otherwise it would be shipped directly as-is.
+   -->
+  <ItemGroup>
+    <FrontendConfig Include="$(PackageJsonPath)package.json" />
+    <FrontendConfig Include="$(PackageJsonPath)package-lock.json" />
+    <FrontendBuild Include="@(FrontendCompilePatterns->'$(MSBuildProjectDirectory)**/%(Identity)')" Exclude="$(PackageJsonPath)/node_modules/**/*;$(FrontendCompileExcludes)" />
+
+    <Content Remove="@(FrontendConfig)" />
+    <Content Remove="@(FrontendBuild)" />
+    <Content Remove="$(PackageJsonPath)/node_modules/**/*" />
+
+    <None Include="@(FrontendConfig)" />
+    <None Include="@(FrontendBuild)" />
+  </ItemGroup>
+
+  <!-- Setup item groups we need for the following targets. They're put in the target so that they don't interfere in project loading and display. -->
+  <Target Name="_SetupFrontendBuild">
+    <ItemGroup>
+      <_DependencyInstallStamp Include="$(BaseIntermediateOutputPath)npm-install.stamp" />
+      <_FrontendBuildStamp Include="$(IntermediateOutputPath)npm-build.stamp" />
+
+      <_FrontendInputs Include="@(FrontendBuild)" />
+      <_FrontendInputs Include="@(FrontendConfig)" />
+      <_FrontendInputs Include="@(FrontendDependencies)" />
+      <_FrontendTarget Include="$(IntermediateOutputPath)dist/**/*" />
+    </ItemGroup>
+  </Target>
+
+  <!-- npm install - depends on the stamp-file -->
+  <Target Name="_InstallDependencies" AfterTargets="restore" DependsOnTargets="_SetupFrontendBuild" Inputs="@(FrontendConfig)" Outputs="@(_DependencyInstallStamp)">
+    <Exec Command="$(NpmToolPath) install" EchoOff="true" WorkingDirectory="$(PackageJsonPath)" />
+
+    <PropertyGroup>
+      <_Timestamp>$([System.DateTime]::Now.ToString('yyyy.MM.dd HH:mm:ss'))</_Timestamp>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="@(_DependencyInstallStamp)" Overwrite="true" Lines="$(_Timestamp)" />
+  </Target>
+
+  <!-- npm run build - depends on the stamp-file -->
+  <Target Name="_FrontendBuild" BeforeTargets="PrepareForBuild" DependsOnTargets="_InstallDependencies" Inputs="@(_FrontendInputs)" Outputs="@(_FrontendBuildStamp)" >
+    <Exec Command="$(NpmToolPath) run --if-present $(NpmBuildTarget)"
+          EnvironmentVariables="OUT_DIR=$(IntermediateOutputPath)/dist/"
+          EchoOff="true"
+          WorkingDirectory="$(PackageJsonPath)" />
+
+    <PropertyGroup>
+      <_Timestamp>$([System.DateTime]::Now.ToString('yyyy.MM.dd HH:mm:ss'))</_Timestamp>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="@(_FrontendBuildStamp)" Overwrite="true" Lines="$(_Timestamp)" />
+  </Target>
+
+  <!-- Make sure all the files in obj/../dist/ are included as static assets -->
+  <Target Name="_IncludeFrontendBuildAssets" BeforeTargets="ResolveBuildCompressedStaticWebAssetsConfiguration;GenerateStaticWebAssetsManifest" DependsOnTargets="_FrontendBuild">
+    <ItemGroup>
+      <Content Include="@(_FrontendTarget)" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_FrontendTarget)"
+      SourceId="$(PackageId)"
+      RelativePathPattern="$(IntermediateOutputPath)dist/**/*"
+      ContentRoot="$(MSBuildProjectDirectory)"
+      SourceType="Discovered"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      CacheManifestPath="$(_ResolveJSModuleStaticWebAssetsRazorCachePath)">
+      <Output TaskParameter="Assets" ItemName="_BundledAssets" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_BundledAssets)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_BundledAssetsEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_BundledAssets)" />
+      <StaticWebAssetEndpoint Include="@(_BundledAssetsEndpoint)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- npm run clean and remove our build stamp -->
+  <Target Name="_CleanFrontendOutputs" DependsOnTargets="_SetupFrontendBuild" BeforeTargets="Clean">
+    <Exec Command="$(NpmToolPath) run --if-present $(NpmCleanTarget)"
+          EnvironmentVariables="OUT_DIR=$(IntermediateOutputPath)/dist/"
+          EchoOff="true"
+          WorkingDirectory="$(PackageJsonPath)" />
+
+    <RemoveDir Directories="$(IntermediateOutputPath)dist/" />
+    <Delete Files="@(_FrontendBuildStamp)" />
+  </Target>
+
+  <!-- Remove node_modules and the install stamp *only* when force-restoring -->
+  <Target Name="_FrontendRestore" AfterTargets="restore" BeforeTargets="_InstallDependencies" DependsOnTargets="_SetupFrontendBuild" Condition="$(RestoreForce) == 'true'">
+    <RemoveDir Directories="$(PackageJsonPath)node_modules/" />
+    <Delete Files="@(_DependencyInstallStamp)" />
+  </Target>
+
 </Project>
