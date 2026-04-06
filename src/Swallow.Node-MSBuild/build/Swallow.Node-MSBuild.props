@@ -26,4 +26,41 @@
     <FrontendCompileExcludes>wwwroot/**/*</FrontendCompileExcludes>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!--
+      Just because it's a pain to find out, here's how the relevant dependencies work:
+
+      'dotnet publish':
+      GenerateStaticWebAssetsPublishManifest -> $(GenerateStaticWebAssetsPublishManifestDependsOn)
+        ResolveAllPublishStaticWebAssets
+          ResolveCorePublishStaticWebAssets -> $(ResolveCorePublishStaticWebAssetsDependsOn)
+          ResolvePublishStaticWebAssets -> $(ResolvePublishStaticWebAssetsDependsOn)
+          ResolvePublishRelatedStaticWebAssets -> $(ResolvePublishRelatedStaticWebAssetsDependsOn)
+
+      'dotnet publish', compression:
+      GeneratePublishCompressedStaticWebAssets -> $(GeneratePublishCompressedStaticWebAssetsDependsOn)
+        ResolvePublishCompressedStaticWebAssetsConfiguration
+          ResolvePublishStaticWebAssets -> $(ResolvePublishStaticWebAssetsDependsOn)
+
+      'dotnet pack':
+      GenerateStaticWebAssetsPackFiles
+        GenerateStaticWebAssetsManifest -> $(GenerateStaticWebAssetsManifestDependsOn)
+          ResolveBuildStaticWebAssets
+            ResolveCoreStaticWebAssets -> $(ResolveCoreStaticWebAssetsDependsOn)
+            ResolveStaticWebAssetsInputs -> $(ResolveStaticWebAssetsInputsDependsOn)
+            ResolveBuildRelatedStaticWebAssets -> $(ResolveBuildRelatedStaticWebAssetsDependsOn)
+
+      'dotnet pack', compression
+      GenerateBuildCompressedStaticWebAssets -> $(GenerateBuildCompressedStaticWebAssetsDependsOn)
+        ResolveBuildCompressedStaticWebAssetsConfiguration
+          ResolveStaticWebAssetsInputs -> $(ResolveStaticWebAssetsInputsDependsOn)
+
+      So by hooking into just $(ResolveStaticWebAssetsInputsDependsOn) and $(ResolvePublishStaticWebAssetsDependsOn),
+      we can make sure to have our target run before all the relevant SDK targets. To integrate nicely, our target has
+      to imitate how ResolveProjectStaticWebAssets works in regards to wwwroot/-files.
+    -->
+    <ResolveStaticWebAssetsInputsDependsOn>_IncludeFrontendBuildAssets;$(ResolveCoreStaticWebAssetsDependsOn)</ResolveStaticWebAssetsInputsDependsOn>
+    <ResolvePublishStaticWebAssetsDependsOn>_IncludeFrontendBuildAssets;$(ResolvePublishStaticWebAssetsDependsOn)</ResolvePublishStaticWebAssetsDependsOn>
+  </PropertyGroup>
+
 </Project>
