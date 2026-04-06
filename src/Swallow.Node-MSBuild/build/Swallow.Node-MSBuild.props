@@ -1,12 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <FrontendRootDir>$(MSBuildProjectDirectory)/</FrontendRootDir>
-
-    <BuildToolPath>npm</BuildToolPath>
-    <BuildScriptName>build</BuildScriptName>
-    <CleanScriptName>clean</CleanScriptName>
-
     <!--
       All JS-adjacent files (JavaScript, TypeScript and their React variants for good measure) are
       considered build-relevant.
@@ -16,8 +10,9 @@
       the incremental build. They *might* be dependencies to the build nonetheless,
       we can't really detect that. It's up to the user to do that correctly.
     -->
-    <FrontendCompilePatterns>*.js;*.jsx;*.ts;*.tsx</FrontendCompilePatterns>
-    <FrontendCompileExcludes>wwwroot/**/*</FrontendCompileExcludes>
+    <FrontendCompilePatterns>*.js;*.jsx;*.ts;*.tsx;$(FrontendCompilePatterns)</FrontendCompilePatterns>
+    <ExcludeWwwRoot Condition="$(ExcludeWwwRoot) == ''">true</ExcludeWwwRoot>
+    <FrontendCompileExcludes Condition="$(ExcludeWwwRoot) == 'true'">wwwroot/**/*;$(FrontendCompileExcludes)</FrontendCompileExcludes>
   </PropertyGroup>
 
   <PropertyGroup>

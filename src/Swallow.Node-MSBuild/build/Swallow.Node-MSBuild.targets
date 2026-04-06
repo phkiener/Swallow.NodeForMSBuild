@@ -1,59 +1,81 @@
 <Project>
-  <!-- Entry-point mapping -->
+
   <Target Name="_FrontendRestore" BeforeTargets="restore" DependsOnTargets="_InstallDependencies" />
   <Target Name="_FrontendBuild" BeforeTargets="PrepareForBuild" DependsOnTargets="_RunBuildScript" />
   <Target Name="_FrontendResolveStaticWebAssets" DependsOnTargets="_IncludeFrontendBuildAssets" />
   <Target Name="_FrontendClean" BeforeTargets="Clean" DependsOnTargets="_RemoveInstalledPackages;_CleanFrontendOutputs" />
 
-  <!--
-    Define the various item groups for later use. We want to make sure that none of our items is
-    present in Content, otherwise it would be shipped directly as-is.
-   -->
+  <PropertyGroup>
+    <FrontendRootPath Condition="$(FrontendRootPath) == ''">$(MSBuildProjectDirectory)/</FrontendRootPath>
+    <FrontendPackagePath>$(FrontendRootPath)node_modules/</FrontendPackagePath>
+
+    <BuildToolPath Condition="$(BuildToolPath) == ''">npm</BuildToolPath>
+    <BuildScriptName Condition="$(BuildScriptName) == ''">build</BuildScriptName>
+    <CleanScriptName Condition="$(CleanScriptName) == ''">clean</CleanScriptName>
+  </PropertyGroup>
+
   <ItemGroup>
-    <FrontendConfig Include="$(FrontendRootDir)package.json" />
-    <FrontendConfig Include="$(FrontendRootDir)package-lock.json" />
-    <FrontendBuild Include="@(FrontendCompilePatterns->'$(MSBuildProjectDirectory)**/%(Identity)')" Exclude="$(FrontendRootDir)node_modules/**/*;$(FrontendCompileExcludes)" />
+    <FrontendConfig Include="$(FrontendRootPath)package.json" />
+    <FrontendConfig Include="$(FrontendRootPath)package-lock.json" />
+    <FrontendBuild Include="@(FrontendCompilePatterns->'$(MSBuildProjectDirectory)**/%(Identity)')" Exclude="$(FrontendPackagePath)**/*;$(FrontendCompileExcludes)" />
 
     <Content Remove="@(FrontendConfig)" />
     <Content Remove="@(FrontendBuild)" />
-    <Content Remove="$(FrontendRootDir)node_modules/**/*" />
+    <Content Remove="$(FrontendPackagePath)**/*" />
 
     <None Include="@(FrontendConfig)" />
     <None Include="@(FrontendBuild)" />
   </ItemGroup>
 
-  <!-- General setup; ensure that everything works. -->
+  <!-- SETUP -->
+
   <Target Name="_SetupFrontendBuild">
+    <PropertyGroup>
+      <FrontendOutputPath Condition="$(FrontendOutputPath) == ''">$(IntermediateOutputPath)dist/</FrontendOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_DependencyInstallStamp Include="$(BaseIntermediateOutputPath)npm-install.stamp" />
+      <_FrontendBuildStamp Include="$(IntermediateOutputPath)npm-build.stamp" />
+
+      <_FrontendBuildInput Include="@(FrontendConfig)" />
+      <_FrontendBuildInput Include="@(FrontendBuild)" />
+    </ItemGroup>
   </Target>
 
-  <!-- Restore; TODO: Incrementalism -->
-  <Target Name="_RemoveInstalledPackages" DependsOnTargets="_SetupFrontendBuild" Condition="$(RestoreForce) == 'true'">
-    <RemoveDir Directories="$(FrontendRootDir)node_modules/" />
+  <!-- RESTORE -->
+
+  <Target Name="_RemoveInstalledPackages" DependsOnTargets="_SetupFrontendBuild" BeforeTargets="_InstallDependencies" Condition="$(RestoreForce) == 'true'">
+    <RemoveDir Directories="$(FrontendPackagePath)" />
+    <Delete Files="@(_DependencyInstallStamp)" />
   </Target>
 
-  <Target Name="_InstallDependencies" DependsOnTargets="_SetupFrontendBuild">
-    <Exec Command="$(BuildToolPath) install" EchoOff="true" WorkingDirectory="$(FrontendRootDir)" />
+  <Target Name="_InstallDependencies" DependsOnTargets="_SetupFrontendBuild" Inputs="@(FrontendConfig)" Outputs="@(_DependencyInstallStamp)">
+    <Exec Command="$(BuildToolPath) install" EchoOff="true" WorkingDirectory="$(FrontendRootPath)" />
+    <WriteLinesToFile File="@(_DependencyInstallStamp)" Lines="$([System.DateTime]::Now.ToBinary())" />
   </Target>
 
-  <!-- Build; TODO: Incrementalism; make target folder configurable -->
-  <Target Name="_RunBuildScript" DependsOnTargets="_InstallDependencies">
-    <MakeDir Directories="$(IntermediateOutputPath)dist/" />
+  <!-- BUILD -->
+
+  <Target Name="_RunBuildScript" DependsOnTargets="_InstallDependencies" Inputs="@(_FrontendBuildInput)" Outputs="@(_FrontendBuildStamp)">
+    <MakeDir Directories="$(FrontendOutputPath)" />
 
     <Exec Command="$(BuildToolPath) run --if-present $(BuildScriptName)"
-          EnvironmentVariables="OUT_DIR=$(IntermediateOutputPath)dist/"
+          EnvironmentVariables="OUT_DIR=$(FrontendOutputPath)"
           EchoOff="true"
-          WorkingDirectory="$(FrontendRootDir)" />
+          WorkingDirectory="$(FrontendRootPath)" />
+
+    <WriteLinesToFile File="@(_FrontendBuildStamp)" Lines="$([System.DateTime]::Now.ToBinary())" />
   </Target>
 
-  <!-- StaticWebAssets -->
   <Target Name="_IncludeFrontendBuildAssets" DependsOnTargets="_FrontendBuild">
     <ItemGroup>
-      <_FrontendOutput Include="$(IntermediateOutputPath)dist/**/*" />
+      <_FrontendOutput Include="$(FrontendOutputPath)**/*" />
     </ItemGroup>
     <DefineStaticWebAssets
       CandidateAssets="@(_FrontendOutput->Distinct())"
-      RelativePathPattern="$(IntermediateOutputPath)dist/**/*"
-      ContentRoot="$(IntermediateOutputPath)dist/"
+      RelativePathPattern="$(FrontendOutputPath)**/*"
+      ContentRoot="$(FrontendOutputPath)"
       BasePath="$(StaticWebAssetBasePath)"
       SourceType="Computed"
       SourceId="$(PackageId)"
@@ -71,14 +93,16 @@
     </DefineStaticWebAssetEndpoints>
   </Target>
 
-  <!-- Clean-->
+  <!-- CLEAN -->
+
   <Target Name="_CleanFrontendOutputs" DependsOnTargets="_SetupFrontendBuild">
     <Exec Command="$(BuildToolPath) run --if-present $(CleanScriptName)"
-          EnvironmentVariables="OUT_DIR=$(IntermediateOutputPath)dist/"
+          EnvironmentVariables="OUT_DIR=$(FrontendOutputPath)"
           EchoOff="true"
-          WorkingDirectory="$(FrontendRootDir)" />
+          WorkingDirectory="$(FrontendRootPath)" />
 
-    <RemoveDir Directories="$(IntermediateOutputPath)dist/" />
+    <RemoveDir Directories="$(FrontendOutputPath)" />
+    <Delete Files="@(_FrontendBuildStamp)" />
   </Target>
 
 </Project>
