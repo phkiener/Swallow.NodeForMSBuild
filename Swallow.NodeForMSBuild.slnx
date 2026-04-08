@@ -17,4 +17,8 @@
     <File Path="src\Directory.Build.props" />
     <Project Path="src\Swallow.NodeForMSBuild\Swallow.NodeForMSBuild.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="test/Swallow.NodeForMSBuild.Test/Swallow.NodeForMSBuild.Test.csproj" />
+    <Project Path="test/TestHost/TestHost.csproj" />
+  </Folder>
 </Solution>

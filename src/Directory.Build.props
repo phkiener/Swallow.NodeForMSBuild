@@ -9,7 +9,6 @@
 
     <!-- NuGet options -->
     <IsPackable>true</IsPackable>
-    <IncludeSymbols>false</IncludeSymbols>
 
     <Authors>Philipp Kiener</Authors>
     <Copyright>2026 Philipp Kiener</Copyright>
