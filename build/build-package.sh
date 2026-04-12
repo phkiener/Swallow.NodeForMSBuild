@@ -6,7 +6,7 @@ if [ "$#" -ne 1 ]; then
   exit 1
 fi
 
-SOLUTION_PATH="Swallow.NodeForMSBuild.slnx"
+SOLUTION_PATH="Swallow.MSBuild.Node.slnx"
 PACKAGE_PATH="packages"
 
 echo "--> Running tests before packing packages..."

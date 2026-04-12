@@ -2,6 +2,7 @@ using TUnit.Core.Interfaces;
 
 namespace Swallow.MSBuild.Node.Test.Framework;
 
+[NotInParallel]
 public abstract class MSBuildTestBase(string identifier) : IAsyncInitializer
 {
     protected string CurrentDirectory { get; } = CreateTempPath(identifier);
@@ -46,8 +47,7 @@ public abstract class MSBuildTestBase(string identifier) : IAsyncInitializer
 
         dotnet.Pack(
             outputDirectory: Path.Combine(CurrentDirectory, "packages"),
-            project: Path.Combine(SolutionPath, "src", "Swallow.MSBuild.Node"),
-            configuration: Dotnet.Configuration.Release);
+            project: Path.Combine(SolutionPath, "src", "Swallow.MSBuild.Node"));
     }
 
     private void AddReferenceToPackage()
