@@ -12,7 +12,7 @@
 
     <Authors>Philipp Kiener</Authors>
     <Copyright>2026 Philipp Kiener</Copyright>
-    <PackageProjectUrl>https://github.com/phkiener/Swallow.NodeForMSBuild</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/phkiener/Swallow.MSBuild.Node</PackageProjectUrl>
 
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -22,7 +22,7 @@
     <Description>An integration of NodeJS-based build tooling into MSBuild</Description>
 
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/phkiener/Swallow.NodeForMSBuild</RepositoryUrl>
+    <RepositoryUrl>https://github.com/phkiener/Swallow.MSBuild.Node</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 

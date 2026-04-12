@@ -1,4 +1,4 @@
-namespace Swallow.NodeForMSBuild.Test;
+namespace Swallow.MSBuild.Node.Test;
 
 public sealed class PublishOutputTest
 {
@@ -14,7 +14,7 @@ public sealed class PublishOutputTest
         TestUtils.CopyProject(fromPath: Path.Combine(solutionPath, "test", "TestHost"), toPath: testProject, files: ProjectFiles);
 
         var packageOutput = Path.Combine(testRunPath, "packages");
-        TestUtils.PublishPackage(Path.Combine(solutionPath, "src", "Swallow.NodeForMSBuild"), packageOutput);
+        TestUtils.PublishPackage(Path.Combine(solutionPath, "src", "Swallow.MSBuild.Node"), packageOutput);
 
         TestUtils.AddPackageReference(testProject);
 

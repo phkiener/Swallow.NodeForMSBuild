@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Swallow.NodeForMSBuild.Test;
+namespace Swallow.MSBuild.Node.Test;
 
 internal static class TestUtils
 {
@@ -8,7 +8,7 @@ internal static class TestUtils
 
     public static string FindSolutionRoot(string startingDirectory)
     {
-        const string solutionName = "Swallow.NodeForMSBuild.slnx";
+        const string solutionName = "Swallow.MSBuild.Node.slnx";
 
         var currentPath = startingDirectory;
         while (!File.Exists(Path.Combine(currentPath, solutionName)))
@@ -26,7 +26,7 @@ internal static class TestUtils
     public static string CreateTempPath(string testName)
     {
         var tempPath = Path.GetTempPath();
-        var testRunPath = Path.Combine(tempPath, $"swallow-nodeformsbuild-test-{DateTime.UtcNow:yyyy-MM-dd_HH-mm-ss}", testName);
+        var testRunPath = Path.Combine(tempPath, $"swallow-msbuild-node-test-{DateTime.UtcNow:yyyy-MM-dd_HH-mm-ss}", testName);
         Directory.CreateDirectory(testRunPath);
 
         return testRunPath;
@@ -61,7 +61,7 @@ internal static class TestUtils
     {
         dotnetExecutablePath ??= FindDotnetExecutable();
 
-        Execute(dotnetExecutablePath, "add", projectPath, "package", "Swallow.NodeForMSBuild");
+        Execute(dotnetExecutablePath, "add", projectPath, "package", "Swallow.MSBuild.Node");
     }
 
     public static void PublishProject(string projectPath, string targetDirectory)

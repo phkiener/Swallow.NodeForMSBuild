@@ -15,11 +15,11 @@
   </Folder>
   <Folder Name="/Library/">
     <File Path="src\Directory.Build.props" />
-    <Project Path="src\Swallow.NodeForMSBuild\Swallow.NodeForMSBuild.csproj" />
+    <Project Path="src\Swallow.MSBuild.Node\Swallow.MSBuild.Node.csproj" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="test/Swallow.NodeForMSBuild.Test/Swallow.NodeForMSBuild.Test.csproj" />
     <Project Path="test/TestHost/TestHost.csproj" />
     <Project Path="test/TestPackage/TestPackage.csproj" />
+    <Project Path="test\Swallow.MSBuild.Node.Test\Swallow.MSBuild.Node.Test.csproj" />
   </Folder>
 </Solution>
